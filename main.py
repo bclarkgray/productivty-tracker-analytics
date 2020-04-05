@@ -1,8 +1,8 @@
 from pynput import mouse, keyboard
 from datetime import datetime
 import time
-#import wnck  <-- this should let me track window IDs or something like that
-
+import pygetwindow as gw
+#IF THIS FAILS WE USE WIN32 YIKERS
 
 #def on_move(x, y):
 #	currTime = datetime.now()
@@ -20,23 +20,41 @@ def on_press(key):
 	currTime = datetime.now()
 	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
 
-#Old blocking version
-'''with mouse.Listener(on_click=on_click) as listener:
-	with keyboard.Listener(on_press=on_press) as listener:
-		listener.join()
-'''
+def start_listeners():
+	mouseListener = mouse.Listener(on_click=on_click)
+	keyboardListener = keyboard.Listener(on_press=on_press)
+	mouseListener.start()
+	keyboardListener.start()
+
+def get_active_window():
+	currWindow = gw.getActiveWindow()
+
+	flag = False
+	for window in windows:
+		if (currWindow == window):
+			print(window.title)
+			flag = True
+			break
+	if (flag == False):
+		print(currWindow.title)
+		windows.append(currWindow)
+	
+
+
+
 
 if __name__ == "__main__":
 	
 	f = open("log.txt", "w")
 	f.write("ACTION, TIME\n")
 
-	mouseListener = mouse.Listener(on_click=on_click)
-	keyboardListener = keyboard.Listener(on_press=on_press)
-	mouseListener.start()
-	keyboardListener.start()
+	start_listeners()
 
-
-	time.sleep(10)
+	time.sleep(3)
+	
+	windows = []
+	while True:
+		time.sleep(2)
+		get_active_window()
 
 	f.close()
