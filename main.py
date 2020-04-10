@@ -1,8 +1,7 @@
 from pynput import mouse, keyboard
 from datetime import datetime
 import time
-#import wnck  <-- this should let me track window IDs or something like that
-
+import pygetwindow as gw
 
 #def on_move(x, y):
 #	currTime = datetime.now()
@@ -14,29 +13,41 @@ import time
 	
 def on_click(x, y, button, pressed):
 	currTime = datetime.now()
-	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
+	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S, ') + activeWindow + "\n")
+	f.flush()
 
 def on_press(key):
 	currTime = datetime.now()
-	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
+	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S, ') + activeWindow + "\n")
+	f.flush()
 
-#Old blocking version
-'''with mouse.Listener(on_click=on_click) as listener:
-	with keyboard.Listener(on_press=on_press) as listener:
-		listener.join()
-'''
-
-if __name__ == "__main__":
-	
-	f = open("log.txt", "w")
-	f.write("ACTION, TIME\n")
-
+def start_listeners():
 	mouseListener = mouse.Listener(on_click=on_click)
 	keyboardListener = keyboard.Listener(on_press=on_press)
 	mouseListener.start()
 	keyboardListener.start()
 
+# returns the active window title
+def get_active_window():
+	currWindow = gw.getActiveWindow()
+	if currWindow is None:
+		return "None"
+	elif currWindow._hWnd not in apps:
+		apps[currWindow._hWnd] = currWindow.title
+	
+	return apps[currWindow._hWnd]
 
-	time.sleep(10)
+if __name__ == "__main__":
+	
+	f = open("log.txt", "w")
+	f.write("ACTION, TIME, APPLICATION\n")
+
+	activeWindow = None
+	apps = {}
+	start_listeners()
+	
+	while True:
+		time.sleep(1)
+		activeWindow = get_active_window()
 
 	f.close()
