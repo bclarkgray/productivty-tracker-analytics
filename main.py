@@ -2,7 +2,6 @@ from pynput import mouse, keyboard
 from datetime import datetime
 import time
 import pygetwindow as gw
-#IF THIS FAILS WE USE WIN32 YIKERS
 
 #def on_move(x, y):
 #	currTime = datetime.now()
@@ -14,11 +13,13 @@ import pygetwindow as gw
 	
 def on_click(x, y, button, pressed):
 	currTime = datetime.now()
-	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
+	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S, ') + activeWindow + "\n")
+	f.flush()
 
 def on_press(key):
 	currTime = datetime.now()
-	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
+	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S, ') + activeWindow + "\n")
+	f.flush()
 
 def start_listeners():
 	mouseListener = mouse.Listener(on_click=on_click)
@@ -26,35 +27,27 @@ def start_listeners():
 	mouseListener.start()
 	keyboardListener.start()
 
+# returns the active window title
 def get_active_window():
 	currWindow = gw.getActiveWindow()
-
-	flag = False
-	for window in windows:
-		if (currWindow == window):
-			print(window.title)
-			flag = True
-			break
-	if (flag == False):
-		print(currWindow.title)
-		windows.append(currWindow)
+	if currWindow is None:
+		return "None"
+	elif currWindow._hWnd not in apps:
+		apps[currWindow._hWnd] = currWindow.title
 	
-
-
-
+	return apps[currWindow._hWnd]
 
 if __name__ == "__main__":
 	
 	f = open("log.txt", "w")
-	f.write("ACTION, TIME\n")
+	f.write("ACTION, TIME, APPLICATION\n")
 
+	activeWindow = None
+	apps = {}
 	start_listeners()
-
-	time.sleep(3)
 	
-	windows = []
 	while True:
-		time.sleep(2)
-		get_active_window()
+		time.sleep(1)
+		activeWindow = get_active_window()
 
 	f.close()
