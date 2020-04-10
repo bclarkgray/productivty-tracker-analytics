@@ -13,12 +13,12 @@ import pygetwindow as gw
 	
 def on_click(x, y, button, pressed):
 	currTime = datetime.now()
-	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S, ') + activeWindow + "\n")
+	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
 	f.flush()
 
 def on_press(key):
 	currTime = datetime.now()
-	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S, ') + activeWindow + "\n")
+	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
 	f.flush()
 
 def start_listeners():
@@ -30,7 +30,7 @@ def start_listeners():
 # returns the active window title
 def get_active_window():
 	currWindow = gw.getActiveWindow()
-	if currWindow is None:
+	if currWindow.title == "":
 		return "None"
 	elif currWindow._hWnd not in apps:
 		apps[currWindow._hWnd] = currWindow.title
@@ -39,7 +39,7 @@ def get_active_window():
 
 if __name__ == "__main__":
 	
-	f = open("log.txt", "w")
+	f = open("activity_data.csv", "w")
 	f.write("ACTION, TIME, APPLICATION\n")
 
 	activeWindow = None
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	start_listeners()
 	
 	while True:
-		time.sleep(1)
+		time.sleep(.5)
 		activeWindow = get_active_window()
 
 	f.close()
