@@ -10,17 +10,20 @@ import pygetwindow as gw
 #def on_scroll(x, y, dx, dy):
 #	currTime = datetime.now()
 #	f.write("mouse_scroll," + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
-	
+
+# gets mouse click input
 def on_click(x, y, button, pressed):
 	currTime = datetime.now()
 	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
 	f.flush()
 
+# gets keyboard input
 def on_press(key):
 	currTime = datetime.now()
 	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
 	f.flush()
 
+# starts the on_click and on_press input listeners
 def start_listeners():
 	mouseListener = mouse.Listener(on_click=on_click)
 	keyboardListener = keyboard.Listener(on_press=on_press)
@@ -33,21 +36,29 @@ def get_active_window():
 	if currWindow.title == "":
 		return "None"
 	elif currWindow._hWnd not in apps:
-		apps[currWindow._hWnd] = currWindow.title
+		title = parse_title(currWindow.title)
+		apps[currWindow._hWnd] = title
 	
 	return apps[currWindow._hWnd]
+
+# parses a window title for keyword and returns it (checks after the last '-' character)
+def parse_title(title):
+	splitList = title.split('- ')
+	keyWord = splitList.pop()
+	print(keyWord)
+	return(keyWord)
 
 if __name__ == "__main__":
 	
 	f = open("activity_data.csv", "w")
 	f.write("ACTION, TIME, APPLICATION\n")
 
-	activeWindow = None
+	activeWindow = "None"
 	apps = {}
 	start_listeners()
 	
 	while True:
-		time.sleep(.5)
+		time.sleep(1)
 		activeWindow = get_active_window()
 
 	f.close()
