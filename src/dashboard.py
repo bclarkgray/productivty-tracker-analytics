@@ -1,40 +1,47 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output
 
-app = dash.Dash()
+import pandas as pd
+import plotly.express as px
+
+# reads csv into 2 dataframes one for mouseclicks and the other for keypresses
+def handle_data():
+    df = pd.read_csv('activity_data.csv')
+    
+    mClickFilter = df['ACTION'] == 'mouse_click'
+    kPressFilter = df['ACTION'] == 'keypress'
+    
+    mClickDf = df.where(mClickFilter)
+    mClickDf.dropna(inplace=True)
+    
+    kPressDf = df.where(kPressFilter)
+    kPressDf.dropna(inplace=True)
+
+mClickFig = px.pie(mClickDf, names='APPLICATION', title='Activity measured by mouse clicks')
+kPressFig = px.pie(kPressDf, names='APPLICATION', title='Activity measured by keyboard presses')
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+# layout and CSS stuff from https://dash.plotly.com/layout
 colors = {
     'background': '#111111',
     'text': '#7FDBFF'
 }
-app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
-    html.H1(
-        children='Hello Dash',
-        style={
-            'textAlign': 'center',
-            'color': colors['text']
-        }
-    ),
-    html.Div(children='Dash: A web application framework for Python.', style={
+
+app.layout = html.Div(children=[
+    html.H1('Application Activity',
+    style = {
         'textAlign': 'center',
-        'color': colors['text']
+        #'color': colors['text']
     }),
-    dcc.Graph(
-        id='Graph1',
-        figure={
-            'data': [
-                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
-            ],
-            'layout': {
-                'plot_bgcolor': colors['background'],
-                'paper_bgcolor': colors['background'],
-                'font': {
-                    'color': colors['text']
-                }
-            }
-        }
-    )
+
+    dcc.Graph(id='mClick-pie-chart', figure=mClickFig),
+
+    dcc.Graph(id='kPress-pie-chart', figure=kPressFig)
 ])
 
 if __name__ == '__main__':

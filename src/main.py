@@ -2,6 +2,7 @@ from pynput import mouse, keyboard
 from datetime import datetime
 import time
 import pygetwindow as gw
+import dashboard
 
 #def on_move(x, y):
 #	currTime = datetime.now()
@@ -20,7 +21,7 @@ def on_click(x, y, button, pressed):
 # gets keyboard input
 def on_press(key):
 	currTime = datetime.now()
-	f.write("keypress," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
+	f.write("key_press," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
 	f.flush()
 
 # starts the on_click and on_press input listeners
@@ -51,7 +52,7 @@ def parse_title(title):
 if __name__ == "__main__":
 	
 	f = open("activity_data.csv", "w")
-	f.write("ACTION, TIME, APPLICATION\n")
+	f.write("ACTION,TIME,APPLICATION\n")
 
 	activeWindow = "None"
 	apps = {}
