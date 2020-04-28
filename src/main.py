@@ -2,7 +2,6 @@ from pynput import mouse, keyboard
 from datetime import datetime
 import time
 import pygetwindow as gw
-import dashboard
 
 #def on_move(x, y):
 #	currTime = datetime.now()
@@ -18,7 +17,7 @@ def on_click(x, y, button, pressed):
 	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
 	f.flush()
 
-# gets keyboard input
+# gets keyboard input on key depress
 def on_press(key):
 	currTime = datetime.now()
 	f.write("key_press," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + "\n")
@@ -34,8 +33,10 @@ def start_listeners():
 # returns the active window title
 def get_active_window():
 	currWindow = gw.getActiveWindow()
-	if currWindow.title == "":
-		return "None"
+	if currWindow == None:
+		return "Windows"
+	#elif currWindow.title == "":
+	#	return "None"
 	elif currWindow._hWnd not in apps:
 		title = parse_title(currWindow.title)
 		apps[currWindow._hWnd] = title
@@ -50,11 +51,14 @@ def parse_title(title):
 	return(keyWord)
 
 if __name__ == "__main__":
-	
-	f = open("activity_data.csv", "w")
-	f.write("ACTION,TIME,APPLICATION\n")
+	# creating and setting up CSV
+	dataFile = 'activity_data.csv'
+	f = open(dataFile, 'w')
+	f.write('ACTION,TIME,APPLICATION\n')
+	f.flush()
 
-	activeWindow = "None"
+	# setting up for tracking the active window
+	activeWindow = 'None'
 	apps = {}
 	start_listeners()
 	
