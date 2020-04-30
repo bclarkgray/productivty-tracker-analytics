@@ -23,18 +23,40 @@ def process_data(dataFile):
     figures = []
     figures.append(px.pie(mClickDf, names='APPLICATION', title='Activity measured by mouse clicks'))
     figures.append(px.pie(kPressDf, names='APPLICATION', title='Activity measured by keyboard presses'))
+    for fig in figures:
+        fig.update_traces(textposition='inside')
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+
     return figures
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+def serve_layout():
+    figures = []
+    figures = process_data(dataFile)
+    
+    return html.Div(children = [
+        html.H1('Application Activity',
+        style = {
+            'textAlign': 'center',
+            #'color': colors['text']
+        }),
+
+        #html.Button('Refresh Data', id='refresh-data'),
+
+        dcc.Graph(id='mClick-pie-chart', figure=figures[0]),
+
+        dcc.Graph(id='kPress-pie-chart', figure=figures[1])
+    ])
+
+# layout and CSS stuff from https://dash.plotly.com/layout
 def run_dashboard(figures):
-    # layout and CSS stuff from https://dash.plotly.com/layout
-    colors = {
+    '''colors = {
         'background': '#111111',
         'text': '#7FDBFF'
     }
-
+'''
     app.layout = html.Div(children=[
         html.H1('Application Activity',
         style = {
@@ -48,17 +70,18 @@ def run_dashboard(figures):
 
         dcc.Graph(id='kPress-pie-chart', figure=figures[1])
     ])
-
+'''
 @app.callback(
     dash.dependencies.Output('refresh-data')
 
 
 )
-
+'''
 if __name__ == '__main__':
-    figures = []
     dataFile = 'activity_data.csv'
-    figures = process_data(dataFile)
-    run_dashboard(figures)
+    app.layout = serve_layout
+    #figures = []
+    #figures = process_data(dataFile)
+    #run_dashboard(figures)
 
     app.run_server(debug=True)
