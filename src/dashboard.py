@@ -10,19 +10,24 @@ import plotly.express as px
 # returns a list of figures
 def process_data(dataFile):
     df = pd.read_csv(dataFile)
-    
+
     mClickFilter = df['ACTION'] == 'mouse_click'
     kPressFilter = df['ACTION'] == 'key_press'
-    
+
     mClickDf = df.where(mClickFilter)
     mClickDf.dropna(inplace=True)
-    
+
     kPressDf = df.where(kPressFilter)
     kPressDf.dropna(inplace=True)
 
     figures = []
     figures.append(px.pie(mClickDf, names='APPLICATION', title='Activity measured by mouse clicks'))
     figures.append(px.pie(kPressDf, names='APPLICATION', title='Activity measured by keyboard presses'))
+    figures.append(px.pie(df, names='CATEGORY', title='Activities Categorized'))
+    df = df[df.CATEGORY == 'Browsing']
+    figures.append(px.pie(df, names='TAB', title='Browser activity'))
+
+
     for fig in figures:
         fig.update_traces(textposition='inside')
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
@@ -47,7 +52,11 @@ def serve_layout():
 
         dcc.Graph(id='mClick-pie-chart', figure=figures[0]),
 
-        dcc.Graph(id='kPress-pie-chart', figure=figures[1])
+        dcc.Graph(id='kPress-pie-chart', figure=figures[1]),
+
+        dcc.Graph(id='category-pie-chart', figure=figures[2]),
+
+        dcc.Graph(id='browser-pie-chart', figure=figures[3])
     ])
 
 # layout and CSS stuff from https://dash.plotly.com/layout

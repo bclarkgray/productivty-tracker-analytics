@@ -3,35 +3,24 @@ from datetime import datetime
 import time
 import pygetwindow as gw
 
-#def on_move(x, y):
-#	currTime = datetime.now()
-#	f.write("mouse_move, " + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
-
-#def on_scroll(x, y, dx, dy):
-#	currTime = datetime.now()
-#	f.write("mouse_scroll," + currTime.strftime('%Y-%m-%d %H:%M:%S') + "\n")
-
 # gets mouse click input
 def on_click(x, y, button, pressed):
-	
-	global tab
-	activeWindow = get_active_window()
+	activeWindow = Window()
+	get_active_window(activeWindow)
+
 	currTime = datetime.now()
-	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + ',' + category + ',' + tab + '\n')
+	f.write("mouse_click," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow.title + ',' + activeWindow.category + ',' + activeWindow.tab + '\n')
 	f.flush()
-	
-	tab = ''
-	#time.sleep(.1)
+
 
 # gets keyboard input on key depress
 def on_press(key):
-	global tab
-	activeWindow = get_active_window()
+	activeWindow = Window()
+	get_active_window(activeWindow)
+
 	currTime = datetime.now()
-	f.write("key_press," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow + ',' + category + ',' + tab + '\n')
+	f.write("key_press," + currTime.strftime('%Y-%m-%d %H:%M:%S,') + activeWindow.title + ',' + activeWindow.category + ',' + activeWindow.tab + '\n')
 	f.flush()
-	tab = ''
-	time.sleep(.1)
 
 # starts the on_click and on_press input listeners
 def start_listeners():
@@ -41,58 +30,52 @@ def start_listeners():
 	keyboardListener.start()
 
 # returns the active window title
-def get_active_window():
-	global category
+def get_active_window(window):
 	currWindow = gw.getActiveWindow()
-	if currWindow == None:
-		return "Windows"
-	elif currWindow.title == '':
-		return 'Windows'
+	if currWindow == None or currWindow.title == '':
+		window.category = 'Unclassified'
+		window.title = 'Windows'
+		return
 	elif currWindow._hWnd not in apps:
-		title = parse_title(currWindow.title)
-		apps[currWindow._hWnd] = title
-	
-	title = apps[currWindow._hWnd]
+		window.title = parse_title(currWindow, window)
+		apps[currWindow._hWnd] = window.title
+	else:
+		window.title = parse_title(currWindow, window)
 
-	if title in categories:
-		category = categories[title]
+	window.title = apps[currWindow._hWnd]
 
-	return title
+	if window.title in categories:
+		window.category = categories[window.title]
+	else:
+		window.category = 'Unclassified'
+
+	return
 
 # parses a window title for keyword and returns it (checks after the last '-' character)
-def parse_title(title):
-	global tab
-	splitList = title.split('- ')
+def parse_title(currWindow, window):
+	splitList = currWindow.title.split('- ')
 	keyWord = splitList.pop()
-	print(keyWord)
-	
-	print(splitList)
-	'''
-	if keyWord == 'Google Chrome' or 'Firefox':
-		if splitList:
-			sp = splitList.pop()
-			if sp == 'Gmail ':
-				print("tab got tripped")
-				tab = 'Gmail'
-			#else:
-				#tab = ''
-			if sp in tabs:
-				tab = sp
-				print("tab set to " + tab)
-			else:
-				tab = ''
-		else:
-			tab = ''
-			'''
-	return(keyWord)
 
-category = ''
-tab = ''
+	if keyWord == 'Google Chrome' or keyWord == 'Firefox':
+		parse_tab(currWindow, splitList, window)
+
+	return keyWord
+
+
+def parse_tab(currWindow, splitList, window):
+	if splitList:
+			sp = splitList.pop()
+			if sp in tabs:
+				window.tab = sp
+			else:
+				window.tab = 'Unclassified'
+
 
 categories = {
 	'Visual Studio Code': 'Work', 
 	'Google Chrome': 'Browsing',
 	'Firefox': 'Browsing',
+	'Mozilla Firefox': 'Browsing',
 	'Discord': 'Leisure',
 	'Windows PowerShell': 'Work',
 	'Spotify Premium': 'Leisure',
@@ -104,14 +87,45 @@ categories = {
 
 tabs = [
 	'YouTube ',
-	'Stack Overflow',
+	'Stack Overflow ',
 	'Gmail ',
 	'Twitter ',
 	'Facebook ',
 	'LinkedIn ',
 	'Reddit ',
-	'GeeksForGeeks '
+	'GeeksforGeeks '
 ]
+
+class Window:
+	def __init__(self):
+		self._title = ''
+		self._category = ''
+		self._tab = 'Unclassified'
+
+	@property
+	def title(self):
+		return self._title
+	
+	@title.setter
+	def title(self, x):
+		self._title = x
+
+	@property
+	def category(self):
+		return self._category
+	
+	@category.setter
+	def category(self, x):
+		self._category = x
+
+	@property
+	def tab(self):
+		return self._tab
+	
+	@tab.setter
+	def tab(self, x):
+		self._tab = x
+
 
 if __name__ == "__main__":
 	# creating and setting up CSV
@@ -121,10 +135,9 @@ if __name__ == "__main__":
 	f.flush()
 
 	# setting up for tracking the active window
-	activeWindow = 'None'
 	apps = {}
 	start_listeners()
-	
+
 	while True:
 		pass
 	f.close()
